@@ -1,41 +1,81 @@
 <!DOCTYPE html>
-<html lang="sv">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NULLAD 2.0</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: url("background.png") no-repeat center center fixed;
-      background-size: cover;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    .content {
-      transform: translate3d(1.05627px, 3.38108px, 15px) rotateX(0.450811deg) rotateY(-0.140836deg);
-    }
-
-    .logo {
-      --logo-scale: 1.1187833825938693;
-      transform: scale(var(--logo-scale));
-      max-width: 90vw;
-      height: auto;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NULLAD 2.0</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background-color: #000;
+            font-family: Arial, sans-serif;
+        }
+        
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            z-index: -1;
+            opacity: 1;
+        }
+        
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            padding-top: 50px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .logo {
+            max-width: 300px;
+            filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.7));
+            animation: glimmer 5s infinite alternate ease-in-out;
+        }
+        
+        @keyframes glimmer {
+            0% {
+                filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.3));
+                opacity: 0.85;
+            }
+            50% {
+                filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.7));
+                opacity: 1;
+            }
+            100% {
+                filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
+                opacity: 0.9;
+            }
+        }
+        
+        .content {
+            color: #fff;
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+        }
+    </style>
 </head>
 <body>
-  <div class="content">
-    <img src="https://raw.githubusercontent.com/fatfellas/fellawebsite/refs/heads/main/FNS%20logo%20v1.png" 
-         alt="Fat Nigga Season Logo" 
-         class="logo" 
-         id="mainLogo" 
-         loading="eager">
-  </div>
+    <div class="background"></div>
+    
+    <div class="logo-container">
+        <img src="nullad-logo.png" alt="NULLAD 2.0" class="logo">
+    </div>
+    
+    <div class="content">
+        <!-- Add any additional content here -->
+    </div>
+
+    <script>
+        // You can add JavaScript here if needed
+    </script>
 </body>
 </html>

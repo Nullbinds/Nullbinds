@@ -669,28 +669,34 @@ function logout() {
 
 
 // Replace your button click handler with this:
-document.getElementById('forum-button').addEventListener('click', async (e) => {
+document.getElementById('forum-button').addEventListener('click', async function(e) {
   e.preventDefault();
   
   try {
-    // First check if we're already logged in
     if (localStorage.getItem('github_token')) {
       document.getElementById('forum-container').style.display = 'flex';
-      loadForumPosts();
-      return;
+      await loadForumPosts();
+    } else {
+      const response = await fetch('/.netlify/functions/get-auth-url');
+      const { url } = await response.json();
+      window.location.href = url;
     }
-
-    // If not logged in, start OAuth flow
-    const response = await fetch('/.netlify/functions/get-auth-url');
-    const { url } = await response.json();
-    window.location.href = url;
   } catch (error) {
-    console.error('Login failed:', error);
-    alert('Failed to start login. Please try again.');
+    console.error('Forum error:', error);
+    alert('Failed to access forum. Please try again.');
   }
 });
 
+document.getElementById('media-button').addEventListener('click', function(e) {
+  e.preventDefault();
+  document.getElementById('media-gallery').style.display = 'flex';
+});
 
+document.querySelectorAll('.gallery-close, .forum-close').forEach(btn => {
+  btn.addEventListener('click', function() {
+    this.closest('.media-gallery, .forum-container').style.display = 'none';
+  });
+});
 
 // ==================== SLUT PÅ NYA FUNKTIONER ====================
 
@@ -955,33 +961,22 @@ async function postComment(issueNumber, comment) {
             showComingSoonReleases();
         });
 
-        async function loadForumPosts() {
+      async function loadForumPosts() {
+  const forumContainer = document.getElementById('forum-container');
+  const forumPosts = document.getElementById('forum-posts');
+  
+  forumPosts.innerHTML = '<div class="loading">Loading posts...</div>';
+  forumContainer.style.display = 'flex';
 
-  if (localStorage.getItem('github_token')) {
-        document.getElementById('logout-btn').style.display = 'block';
-    }
-            const forumContainer = document.getElementById('forum-container');
-            const forumPosts = document.getElementById('forum-posts');
-            
-            forumContainer.style.display = 'flex';
-            forumPosts.innerHTML = '<div class="loading">Loading posts...</div>';
-            
-            try {
-                // First fetch the issues (posts)
-                const issuesResponse = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/issues`);
-                const issues = await issuesResponse.json();
-                
-                if (!issues.length) {
-                    forumPosts.innerHTML = `
-                        <div class="no-posts">No posts yet.</div>
-                        <a href="https://github.com/${GITHUB_USERNAME}/${GITHUB_REPO}/issues/new" 
-                           target="_blank" 
-                           class="forum-link">
-                           Be the first to create one!
-                        </a>
-                    `;
-                    return;
-                }
+  try {
+    const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/issues`);
+    const issues = await response.json();
+    renderForumPosts(issues);
+  } catch (error) {
+    forumPosts.innerHTML = '<div class="error">Failed to load posts</div>';
+    console.error(error);
+  }
+}
                 
                 // Fetch comments for each issue
                 const postsWithComments = await Promise.all(issues.map(async issue => {

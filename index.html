@@ -809,40 +809,32 @@ async function createForumPost(title, body) {
 }
 
 // Add this at the top of your existing code
-document.addEventListener('DOMContentLoaded', handleAuthRedirect);
-
-async function handleAuthRedirect() {
+// Add this to your existing code
+function handleAuthRedirect() {
   const params = new URLSearchParams(window.location.search);
   const code = params.get('code');
   
   if (code) {
-    try {
-      // Remove the code from URL without reloading
-      window.history.replaceState({}, '', window.location.pathname);
-      
-      // Exchange code for token
-      const response = await fetch('/.netlify/functions/github-auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code })
-      });
-      
-      const { token } = await response.json();
-      localStorage.setItem('github_token', token);
-      
-      // Refresh forum content
-      if (window.location.pathname === '/') {
+    // Remove code from URL without reload
+    window.history.replaceState({}, '', window.location.pathname);
+    
+    fetch('/.netlify/functions/github-auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code })
+    })
+    .then(res => res.json())
+    .then(data => {
+      localStorage.setItem('github_token', data.token);
+      if (document.getElementById('forum-container')) {
         loadForumPosts();
       }
-    } catch (error) {
-      console.error('Login failed:', error);
-    }
+    });
   }
 }
 
-// Update your existing login button handler
-document.getElementById('forum-button').addEventListener('click', async (e) => {
-  e.preventDefault();
+// Call this when page loads
+document.addEventListener('DOMContentLoaded', handleAuthRedirect);
   
   // First check if we're already logged in
   if (localStorage.getItem('github_token')) {

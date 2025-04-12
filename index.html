@@ -11,7 +11,6 @@
             height: 100%;
             width: 100%;
             overflow: hidden;
-            background-color: #000;
             font-family: Arial, sans-serif;
         }
         
@@ -37,6 +36,19 @@
             object-fit: cover;
         }
         
+        /* Fallback background in case video fails */
+        .fallback-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('background.jpg');
+            background-size: cover;
+            background-position: center;
+            z-index: -2;
+        }
+        
         .logo-container {
             display: flex;
             justify-content: center;
@@ -46,7 +58,7 @@
         }
         
         .logo {
-            max-width: 300px;
+            max-width: 250px;
             filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.7));
             animation: glimmer 5s infinite alternate ease-in-out;
         }
@@ -89,8 +101,6 @@
             padding: 10px 20px;
             background-color: transparent;
             color: #fff;
-            border: 0px solid rgba(255, 215, 0, 0.5);
-            border-radius: 0px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-size: 16px;
@@ -103,6 +113,23 @@
             background-color: rgba(255, 215, 0, 0.1);
             box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
             transform: translateY(-2px);
+        }
+        
+        /* Play button for manual start if autoplay fails */
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3;
+            padding: 15px 30px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            border: 1px solid rgba(255, 215, 0, 0.5);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 18px;
+            display: none;
         }
         
         /* Media Gallery Styles */
@@ -181,12 +208,15 @@
     </style>
 </head>
 <body>
+    <!-- Fallback background -->
+    <div class="fallback-bg"></div>
+    
     <div class="video-background">
-        <video autoplay loop muted playsinline>
-            <source src="Background2.mp4" type="video/mp4">
-            <!-- Fallback to static image if video doesn't work -->
+        <video id="background-video" autoplay loop muted playsinline preload="auto">
+            <source src="background2.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
+        <button id="play-button" class="play-button">Play Background</button>
     </div>
     
     <div class="logo-container">
@@ -204,7 +234,7 @@
     <!-- Media Gallery Modal -->
     <div class="media-gallery" id="media-gallery">
         <span class="gallery-close" id="gallery-close">&times;</span>
-        <h2 class="gallery-title">[ random ass clips ]</h2>
+        <h2 class="gallery-title">Media Gallery</h2>
         
         <div class="video-grid" id="video-grid">
             <!-- Video items will be added here dynamically or manually -->
@@ -217,30 +247,60 @@
                         Your browser does not support the video tag.
                     </video>
                 </div>
-                <div class="video-title">random clip</div>
+                <div class="video-title">Sample Video 1</div>
             </div>
             
             <!-- Additional video items can be added here -->
-
-   <!-- Example Video Item (duplicate as needed) -->
-            <div class="video-item">
-                <div class="video-container">
-                    <video controls>
-                        <source src="sample2.mp4" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                </div>
-                <div class="video-title">random clip</div>
-            </div>
         </div>
     </div>
 
     <script>
-        // Video background initialization
         document.addEventListener('DOMContentLoaded', function() {
-            const video = document.querySelector('.video-background video');
-            video.play().catch(function(error) {
-                console.log("Video play failed:", error);
+            // Background video handling
+            const video = document.getElementById('background-video');
+            const playButton = document.getElementById('play-button');
+            
+            // Try multiple methods to ensure video plays
+            function tryPlayVideo() {
+                // Try to play using the play() method
+                const playPromise = video.play();
+                
+                // Handle promise rejection (common in some browsers)
+                if (playPromise !== undefined) {
+                    playPromise.then(_ => {
+                        console.log("Autoplay started successfully");
+                    }).catch(error => {
+                        console.log("Autoplay was prevented:", error);
+                        // Show play button if autoplay fails
+                        playButton.style.display = 'block';
+                    });
+                }
+            }
+            
+            // Try to play the video
+            tryPlayVideo();
+            
+            // Add interaction event listeners (some browsers require user interaction)
+            document.addEventListener('click', function() {
+                tryPlayVideo();
+            });
+            
+            document.addEventListener('touchstart', function() {
+                tryPlayVideo();
+            });
+            
+            // Manual play button
+            playButton.addEventListener('click', function() {
+                video.play();
+                playButton.style.display = 'none';
+            });
+            
+            // Ensure video keeps playing if browser stops it
+            video.addEventListener('pause', function() {
+                // Only autoplay again if not paused by user interaction
+                if (!video.hasAttribute('data-user-paused')) {
+                    video.play().catch(e => console.log("Retry play failed:", e));
+                }
             });
             
             // Media Gallery Controls

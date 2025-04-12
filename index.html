@@ -11,7 +11,7 @@
             height: 100%;
             width: 100%;
             overflow: hidden;
-
+            background-color: #000;
             font-family: Arial, sans-serif;
         }
         
@@ -46,7 +46,7 @@
         }
         
         .logo {
-            max-width: 250px;
+            max-width: 300px;
             filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.7));
             animation: glimmer 5s infinite alternate ease-in-out;
         }
@@ -104,6 +104,80 @@
             box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
             transform: translateY(-2px);
         }
+        
+        /* Media Gallery Styles */
+        .media-gallery {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 10;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto;
+            padding: 50px 0;
+        }
+        
+        .gallery-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: #fff;
+            font-size: 30px;
+            cursor: pointer;
+            z-index: 11;
+        }
+        
+        .gallery-title {
+            color: #fff;
+            margin-bottom: 30px;
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            width: 80%;
+            max-width: 1200px;
+        }
+        
+        .video-item {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            background-color: #111;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 4px;
+        }
+        
+        .video-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .video-title {
+            color: #fff;
+            margin-top: 10px;
+            font-size: 14px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -121,19 +195,62 @@
     
     <div class="content">
         <div class="buttons-container">
-            <a href="#" class="button">[ tutorial ]</a>
+            <a href="#" class="button" id="media-button">[ media ]</a>
             <a href="#" class="button">[ releases ]</a>
             <a href="#" class="button">[ discord ]</a>
         </div>
     </div>
+    
+    <!-- Media Gallery Modal -->
+    <div class="media-gallery" id="media-gallery">
+        <span class="gallery-close" id="gallery-close">&times;</span>
+        <h2 class="gallery-title">Media Gallery</h2>
+        
+        <div class="video-grid" id="video-grid">
+            <!-- Video items will be added here dynamically or manually -->
+            
+            <!-- Example Video Item (duplicate as needed) -->
+            <div class="video-item">
+                <div class="video-container">
+                    <video controls>
+                        <source src="sample1.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                <div class="video-title">Sample Video 1</div>
+            </div>
+            
+            <!-- Additional video items can be added here -->
+        </div>
+    </div>
 
     <script>
-        // Optional JavaScript to ensure video plays
+        // Video background initialization
         document.addEventListener('DOMContentLoaded', function() {
-            const video = document.querySelector('video');
+            const video = document.querySelector('.video-background video');
             video.play().catch(function(error) {
                 console.log("Video play failed:", error);
-                // You might want to add a play button here for browsers that block autoplay
+            });
+            
+            // Media Gallery Controls
+            const mediaButton = document.getElementById('media-button');
+            const mediaGallery = document.getElementById('media-gallery');
+            const galleryClose = document.getElementById('gallery-close');
+            
+            mediaButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                mediaGallery.style.display = 'flex';
+            });
+            
+            galleryClose.addEventListener('click', function() {
+                mediaGallery.style.display = 'none';
+            });
+            
+            // Close gallery when clicking outside content
+            mediaGallery.addEventListener('click', function(e) {
+                if (e.target === mediaGallery) {
+                    mediaGallery.style.display = 'none';
+                }
             });
         });
     </script>

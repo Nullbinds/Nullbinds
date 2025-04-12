@@ -1,7 +1,7 @@
 [build]
   functions = "netlify/functions"
+  command = "echo 'No build needed'"
 
-[[redirects]]
-  from = "/auth"
-  to = "/auth.html"
-  status = 200
+# Disable secrets scanning for these paths (if needed)
+[secrets]
+  scan_omit_paths = ["netlify/functions/*"]

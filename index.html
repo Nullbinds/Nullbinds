@@ -487,6 +487,29 @@
 </button>
 
 
+<!DOCTYPE html>
+<html>
+<head>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    
+    if (code) {
+      fetch('/.netlify/functions/github-auth', {
+        method: 'POST',
+        body: JSON.stringify({ code })
+      })
+      .then(response => response.json())
+      .then(data => {
+        localStorage.setItem('github_token', data.token);
+        window.location.href = '/';
+      });
+    }
+  </script>
+</head>
+<body>Processing authentication...</body>
+</html>
+
 
     <div class="video-background">
         <video autoplay loop muted playsinline id="bg-video">
@@ -587,17 +610,11 @@ document.getElementById('github-login-btn').addEventListener('click', () => {
 });
 
 function startGitHubOAuth() {
-  // Store current page to return after auth
-  localStorage.setItem('preAuthPath', window.location.pathname);
-  
-  // Construct OAuth URL
   const authUrl = new URL('https://github.com/login/oauth/authorize');
-  authUrl.searchParams.set('client_id', GITHUB_CLIENT_ID);
-  authUrl.searchParams.set('redirect_uri', GITHUB_REDIRECT_URI);
+  authUrl.searchParams.set('client_id', 'Ov23liOy1RCXRP5TlWWE');
+  authUrl.searchParams.set('redirect_uri', 'https://nullbinds.netlify.app/auth');
   authUrl.searchParams.set('scope', 'repo');
-  authUrl.searchParams.set('state', generateRandomString(16)); // Security measure
   
-  // Redirect to GitHub
   window.location.href = authUrl.toString();
 }
 

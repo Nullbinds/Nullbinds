@@ -434,8 +434,35 @@
 }
 
 
+
+/* ========== NY CSS ========== */
+.forum-button {
+    background: rgba(255, 215, 0, 0.2);
+    color: #ffd700;
+    border: none;
+    padding: 8px 16px;
+    margin: 10px 0;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s;
+}
+
+.forum-button:hover {
+    background: rgba(255, 215, 0, 0.3);
+}
+
+#logout-btn {
+    position: absolute;
+    top: 20px;
+    left: 30px;
+}
+/* ========== SLUT PÅ NY CSS ========== */
+
     </style>
 </head>
+
+
+
 <body>
     <div class="video-background">
         <video autoplay loop muted playsinline id="bg-video">
@@ -501,26 +528,65 @@
         </div>
     </div>
 
-    <!-- Forum Modal -->
-    <div class="forum-container" id="forum-container">
-        <span class="forum-close" id="forum-close">&times;</span>
-        <h2 class="forum-title">[ Community Forum ]</h2>
-        
-        <div class="forum-posts" id="forum-posts">
-            <div class="loading">Loading posts...</div>
-        </div>
-        
-        <div class="forum-create-post">
-    <h3>Create New Post</h3>
-    <form id="new-post-form">
-        <input type="text" id="post-title" placeholder="Post title" required>
-        <textarea id="post-body" placeholder="Write your post..." required></textarea>
-        <button type="submit">Submit Post</button>
-    </form>
-</div>
+<!-- Forum Modal -->
+<div class="forum-container" id="forum-container">
+    <span class="forum-close" id="forum-close">&times;</span>
+    <h2 class="forum-title">[ Community Forum ]</h2>
+    
+    <!-- Lägg till denna knapp högst upp -->
+    <button id="logout-btn" class="forum-button" onclick="logout()" style="display:none;">
+        [ Logga ut ]
+    </button>
+    
+    <div class="forum-posts" id="forum-posts">
+        <div class="loading">Laddar inlägg...</div>
     </div>
+    
+    <div class="forum-create-post">
+        <h3>Skapa nytt inlägg</h3>
+        <form id="new-post-form">
+            <input type="text" id="post-title" placeholder="Rubrik" required maxlength="100">
+            <textarea id="post-body" placeholder="Skriv ditt inlägg..." required></textarea>
+            <button type="submit" class="forum-submit-btn">Skicka</button>
+        </form>
+    </div>
+</div>
 
     <script>
+
+
+// ==================== NYA FUNKTIONER ====================
+const GITHUB_CLIENT_ID = 'ditt_client_id_här'; // Ersätt med din riktiga Client ID
+
+async function handleGitHubAuth() {
+  // 1. Kolla om vi har en token i localStorage
+  const token = localStorage.getItem('github_token');
+  if (token) return token;
+
+  // 2. Kolla om vi fick en token från OAuth redirect
+  const params = new URLSearchParams(window.location.search);
+  const authToken = params.get('token');
+  
+  if (authToken) {
+    localStorage.setItem('github_token', authToken);
+    window.history.replaceState({}, document.title, window.location.pathname);
+    return authToken;
+  }
+
+  // 3. Starta OAuth-flöde om ingen token finns
+  const redirectUri = encodeURIComponent(window.location.href);
+  window.location.href = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${redirectUri}&scope=repo`;
+  return null;
+}
+
+function logout() {
+  localStorage.removeItem('github_token');
+  alert('Du är nu utloggad');
+  window.location.reload();
+}
+// ==================== SLUT PÅ NYA FUNKTIONER ====================
+
+
         // Replace these with your GitHub username and repo name
         const GITHUB_USERNAME = 'Nullbinds';
         const GITHUB_REPO = 'Nullbinds';
@@ -564,19 +630,25 @@
             });
 
 
-document.getElementById('new-post-form')?.addEventListener('submit', async (e) => {
+document.getElementById('new-post-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const title = document.getElementById('post-title').value;
-    const body = document.getElementById('post-body').value;
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true;
     
     try {
-        const response = await createForumPost(title, body);
-        if(response) {
+        const response = await createForumPost(
+            document.getElementById('post-title').value,
+            document.getElementById('post-body').value
+        );
+        
+        if (response) {
             loadForumPosts();
             document.getElementById('new-post-form').reset();
         }
     } catch (error) {
-        console.error('Error creating post:', error);
+        console.error('Error:', error);
+    } finally {
+        btn.disabled = false;
     }
 });
 
@@ -599,28 +671,31 @@ document.addEventListener('click', async (e) => {
     }
 });
 
-// Lägg till dessa API-funktioner
 async function createForumPost(title, body) {
-    const token = prompt('Please enter your GitHub personal access token:');
-    if(!token) return;
+  const token = await handleGitHubAuth();
+  if (!token) return;
 
-    try {
-        const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/issues`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `token ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                title: title,
-                body: body
-            })
-        });
-        return await response.json();
-    } catch (error) {
-        console.error('Error creating post:', error);
-        alert('Error creating post. Please check your token and try again.');
-    }
+  try {
+    const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/issues`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `token ${token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.github.v3+json'
+      },
+      body: JSON.stringify({
+        title: title,
+        body: body
+      })
+    });
+
+    if (!response.ok) throw new Error('Misslyckades att skapa inlägg');
+    return await response.json();
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Fel: ' + error.message);
+    return null;
+  }
 }
 
 async function postComment(issueNumber, comment) {
@@ -674,6 +749,10 @@ async function postComment(issueNumber, comment) {
         });
 
         async function loadForumPosts() {
+
+  if (localStorage.getItem('github_token')) {
+        document.getElementById('logout-btn').style.display = 'block';
+    }
             const forumContainer = document.getElementById('forum-container');
             const forumPosts = document.getElementById('forum-posts');
             

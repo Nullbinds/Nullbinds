@@ -11,7 +11,7 @@
             height: 100%;
             width: 100%;
             overflow: hidden;
-            
+ 
             font-family: Arial, sans-serif;
         }
         
@@ -63,6 +63,38 @@
             text-align: center;
             margin-top: 40px;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 50vh;
+        }
+        
+        .buttons-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .button {
+            padding: 10px 20px;
+            background-color: transparent;
+            color: #fff;
+            border: 1px solid rgba(255, 215, 0, 0.5);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            min-width: 100px;
+            text-align: center;
+            text-decoration: none;
+        }
+        
+        .button:hover {
+            background-color: rgba(255, 215, 0, 0.1);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            transform: translateY(-2px);
         }
     </style>
 </head>
@@ -74,7 +106,11 @@
     </div>
     
     <div class="content">
-        <!-- Add any additional content here -->
+        <div class="buttons-container">
+            <a href="#" class="button">[ tutorial ]</a>
+            <a href="#" class="button">[ releases ]</a>
+            <a href="#" class="button">[ discord ]</a>
+        </div>
     </div>
 
     <script>

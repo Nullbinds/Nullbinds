@@ -184,6 +184,21 @@
             100% { transform: scale(1); }
         }
         
+#github-login-btn {
+  background: rgba(46, 164, 79, 0.2); /* GitHub green */
+  color: #fff;
+  border: 1px solid #2ea44f;
+  padding: 8px 16px;
+  margin: 10px 0;
+  cursor: pointer;
+  border-radius: 6px; /* GitHub-style rounded corners */
+  transition: all 0.3s;
+}
+
+#github-login-btn:hover {
+  background: rgba(46, 164, 79, 0.3);
+}
+
         /* Media Gallery Styles */
         .media-gallery {
             position: fixed;
@@ -465,6 +480,14 @@
 
 
 <body>
+
+
+<button id="github-login-btn" class="forum-button">
+  [ Login with GitHub ]
+</button>
+
+
+
     <div class="video-background">
         <video autoplay loop muted playsinline id="bg-video">
             <source src="Background2.mp4" type="video/mp4">
@@ -554,7 +577,39 @@
 </div>
 
     <script>
+// GitHub OAuth Configuration
+const GITHUB_CLIENT_ID = 'Ov23liOy1RCXRP5TlWWE';
+const GITHUB_REDIRECT_URI = 'https://nullbinds.netlify.app'; // Must match GitHub OAuth app settings
 
+// Handle Login Button Click
+document.getElementById('github-login-btn').addEventListener('click', () => {
+  startGitHubOAuth();
+});
+
+function startGitHubOAuth() {
+  // Store current page to return after auth
+  localStorage.setItem('preAuthPath', window.location.pathname);
+  
+  // Construct OAuth URL
+  const authUrl = new URL('https://github.com/login/oauth/authorize');
+  authUrl.searchParams.set('client_id', GITHUB_CLIENT_ID);
+  authUrl.searchParams.set('redirect_uri', GITHUB_REDIRECT_URI);
+  authUrl.searchParams.set('scope', 'repo');
+  authUrl.searchParams.set('state', generateRandomString(16)); // Security measure
+  
+  // Redirect to GitHub
+  window.location.href = authUrl.toString();
+}
+
+// Helper function for state parameter
+function generateRandomString(length) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
 
 // ==================== NYA FUNKTIONER ====================
 async function handleGitHubAuth() {
@@ -703,6 +758,37 @@ async function createForumPost(title, body) {
     console.error('Error:', error);
     alert('Fel: ' + error.message);
     return null;
+  }
+}
+
+
+// Check for OAuth callback when page loads
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  const state = params.get('state');
+  
+  if (code) {
+    handleGitHubCallback(code);
+  }
+});
+
+async function handleGitHubCallback(code) {
+  try {
+    // Remove code from URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+    
+    // Exchange code for token
+    const token = await getGitHubToken(code);
+    
+    // Store token and redirect back
+    localStorage.setItem('github_token', token);
+    const returnPath = localStorage.getItem('preAuthPath') || '/';
+    window.location.href = returnPath;
+    
+  } catch (error) {
+    console.error('OAuth failed:', error);
+    alert('Login failed. Please try again.');
   }
 }
 

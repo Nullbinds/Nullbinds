@@ -557,26 +557,33 @@
 
 
 // ==================== NYA FUNKTIONER ====================
-const GITHUB_CLIENT_ID = 'Ov23liOy1RCXRP5TlWWE'; // Ersätt med din riktiga Client ID
-
 async function handleGitHubAuth() {
-  // 1. Kolla om vi har en token i localStorage
+  const GITHUB_CLIENT_ID = 'Ov23liOy1RCXRP5TlWWE';
+  const GITHUB_REDIRECT_URI = 'https://nullbinds.github.io/Nullbinds/';
+  
+  // 1. Kolla om vi redan har en token
   const token = localStorage.getItem('github_token');
   if (token) return token;
 
-  // 2. Kolla om vi fick en token från OAuth redirect
+  // 2. Kolla URL efter OAuth-svar
   const params = new URLSearchParams(window.location.search);
-  const authToken = params.get('token');
+  const code = params.get('code');
   
-  if (authToken) {
-    localStorage.setItem('github_token', authToken);
-    window.history.replaceState({}, document.title, window.location.pathname);
-    return authToken;
+  if (code) {
+    try {
+      // 3. Byta kod mot token (kräver backend)
+      const token = await exchangeCodeForToken(code);
+      localStorage.setItem('github_token', token);
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return token;
+    } catch (error) {
+      console.error('Inloggning misslyckades:', error);
+    }
   }
 
-  // 3. Starta OAuth-flöde om ingen token finns
-  const redirectUri = encodeURIComponent(window.location.href);
-  window.location.href = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${redirectUri}&scope=repo`;
+  // 4. Starta OAuth-flöde
+  const authUrl = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${encodeURIComponent(GITHUB_REDIRECT_URI)}&scope=repo`;
+  window.location.href = authUrl;
   return null;
 }
 

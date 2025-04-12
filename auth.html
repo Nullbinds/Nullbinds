@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script>
+    const code = new URLSearchParams(window.location.search).get('code');
+    if (code) {
+      fetch('/.netlify/functions/github-auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      })
+      .then(res => res.json())
+      .then(data => {
+        localStorage.setItem('github_token', data.token);
+        window.location.href = '/';
+      });
+    }
+  </script>
+</head>
+<body>Processing login...</body>
+</html>

@@ -666,6 +666,32 @@ function logout() {
   alert('Du är nu utloggad');
   window.location.reload();
 }
+
+
+// Replace your button click handler with this:
+document.getElementById('forum-button').addEventListener('click', async (e) => {
+  e.preventDefault();
+  
+  try {
+    // First check if we're already logged in
+    if (localStorage.getItem('github_token')) {
+      document.getElementById('forum-container').style.display = 'flex';
+      loadForumPosts();
+      return;
+    }
+
+    // If not logged in, start OAuth flow
+    const response = await fetch('/.netlify/functions/get-auth-url');
+    const { url } = await response.json();
+    window.location.href = url;
+  } catch (error) {
+    console.error('Login failed:', error);
+    alert('Failed to start login. Please try again.');
+  }
+});
+
+
+
 // ==================== SLUT PÅ NYA FUNKTIONER ====================
 
 

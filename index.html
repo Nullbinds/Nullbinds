@@ -611,7 +611,7 @@ document.getElementById('github-login-btn').addEventListener('click', () => {
 
 function startGitHubOAuth() {
   const authUrl = new URL('https://github.com/login/oauth/authorize');
-  authUrl.searchParams.set('client_id', 'Ov23liOy1RCXRP5TlWWE');
+
   authUrl.searchParams.set('redirect_uri', 'https://nullbinds.netlify.app/auth');
   authUrl.searchParams.set('scope', 'repo');
   

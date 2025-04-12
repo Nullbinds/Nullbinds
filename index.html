@@ -11,22 +11,30 @@
             height: 100%;
             width: 100%;
             overflow: hidden;
- 
+
             font-family: Arial, sans-serif;
         }
         
-        .background {
+        .video-background {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: url('backgroundnullad.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
             z-index: -1;
-            opacity: 1;
+            overflow: hidden;
+        }
+        
+        .video-background video {
+            position: absolute;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
         }
         
         .logo-container {
@@ -81,8 +89,8 @@
             padding: 10px 20px;
             background-color: transparent;
             color: #fff;
-            border: 0px solid rgba(255, 215, 0, 0.5);
-            border-radius: 0px;
+            border: 1px solid rgba(255, 215, 0, 0.5);
+            border-radius: 4px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-size: 16px;
@@ -99,7 +107,13 @@
     </style>
 </head>
 <body>
-    <div class="background"></div>
+    <div class="video-background">
+        <video autoplay loop muted playsinline>
+            <source src="background.mp4" type="video/mp4">
+            <!-- Fallback to static image if video doesn't work -->
+            Your browser does not support the video tag.
+        </video>
+    </div>
     
     <div class="logo-container">
         <img src="nullad-logo.png" alt="NULLAD 2.0" class="logo">
@@ -114,7 +128,14 @@
     </div>
 
     <script>
-        // You can add JavaScript here if needed
+        // Optional JavaScript to ensure video plays
+        document.addEventListener('DOMContentLoaded', function() {
+            const video = document.querySelector('video');
+            video.play().catch(function(error) {
+                console.log("Video play failed:", error);
+                // You might want to add a play button here for browsers that block autoplay
+            });
+        });
     </script>
 </body>
 </html>

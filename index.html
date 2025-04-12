@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NULLAD 2.0</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+         
+        }
+        
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .video-background video {
+            position: absolute;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+            filter: brightness(1.2) contrast(0.9);
+        }
+        
+        /* Logo animation styles */
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            animation: logoEntrance 1.5s ease-out forwards;
+        }
+        
+        @keyframes logoEntrance {
+            0% {
+                transform: translate(-50%, -50%) scale(1.5);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(0.95);
+                opacity: 1;
+            }
+            100% {
+                top: 50px;
+                transform: translate(-50%, 0) scale(1);
+            }
+        }
+        
+        .logo {
+            max-width: 250px;
+            filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.7));
+            animation: glimmer 5s infinite alternate ease-in-out;
+        }
+        
+        @keyframes glimmer {
+            0% {
+                filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.3));
+                opacity: 0.85;
+            }
+            50% {
+                filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.7));
+                opacity: 1;
+            }
+            100% {
+                filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
+                opacity: 0.9;
+            }
+        }
+        
+        .content {
+            color: #fff;
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 50vh;
+        }
+        
+        /* Button container animation */
+        .buttons-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: buttonsEntrance 1s ease-out 1s forwards;
+        }
+        
+        @keyframes buttonsEntrance {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .button {
+            padding: 8px 16px;
+            background-color: transparent;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            min-width: 65px;
+            text-align: center;
+            text-decoration: none;
+            position: relative;
+            border: none;
+        }
+        
+        .button:hover {
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+            transform: translateY(-2px);
+        }
+        
+        /* Badge/Notification Styles */
+        .badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #ffd700;
+            color: #000;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+        
+        .badge.new {
+            background-color: #ff4500;
+            color: white;
+            padding: 2px 5px;
+            width: auto;
+            height: auto;
+            border-radius: 10px;
+            font-size: 10px;
+            right: -12px;
+            top: -10px;
+        }
+        
+        .badge.soon {
+            background-color: #4CAF50;
+            color: white;
+            padding: 2px 5px;
+            width: auto;
+            height: auto;
+            border-radius: 10px;
+            font-size: 10px;
+            right: -12px;
+            top: -10px;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Media Gallery Styles */
+        .media-gallery {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 10;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto;
+            padding: 50px 0;
+        }
+        
+        .gallery-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: #fff;
+            font-size: 30px;
+            cursor: pointer;
+            z-index: 11;
+        }
+        
+        .gallery-title {
+            color: #fff;
+            margin-bottom: 30px;
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            width: 80%;
+            max-width: 1200px;
+        }
+        
+        .video-item {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            background-color: #111;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 4px;
+        }
+        
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .video-title {
+            color: #fff;
+            margin-top: 10px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        /* Forum Styles */
+        .forum-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            z-index: 10;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+            padding: 50px 20px;
+        }
+
+        .forum-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: #fff;
+            font-size: 30px;
+            cursor: pointer;
+            z-index: 11;
+        }
+
+        .forum-title {
+            color: #ffd700;
+            margin-bottom: 30px;
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .forum-posts {
+            width: 80%;
+            max-width: 800px;
+        }
+
+        .forum-post {
+            background-color: rgba(30, 30, 30, 0.7);
+            border-left: 3px solid #ffd700;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .post-title {
+            color: #ffd700;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .post-body {
+            color: #ddd;
+            margin-bottom: 15px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .post-meta {
+            color: #999;
+            font-size: 12px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .post-comments {
+            margin-top: 20px;
+            padding-left: 20px;
+            border-left: 1px dashed #444;
+        }
+
+        .comment {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
+        }
+
+        .comment-body {
+            color: #ccc;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .comment-meta {
+            color: #777;
+            font-size: 11px;
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .forum-link {
+            display: inline-block;
+            margin: 10px 0;
+            padding: 8px 16px;
+            background-color: rgba(255, 215, 0, 0.2);
+            color: #ffd700;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .forum-link:hover {
+            background-color: rgba(255, 215, 0, 0.3);
+        }
+
+        .loading {
+            color: #ffd700;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .error {
+            color: #ff4500;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* Fallback if video doesn't load */
+        .video-fallback {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+            z-index: -2;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-background">
+        <video autoplay loop muted playsinline id="bg-video">
+            <source src="Background2.mp4" type="video/mp4">
+            <!-- Fallback if video doesn't load -->
+            <div class="video-fallback"></div>
+        </video>
+    </div>
+    
+    <div class="video-fallback"></div> <!-- Fallback background -->
+    
+    <div class="logo-container">
+        <img src="nullad-logo.png" alt="NULLAD 2.0" class="logo">
+    </div>
+    
+    <div class="content">
+        <div class="buttons-container">
+            <a href="#" class="button" id="media-button">
+                [ media ]
+                <span class="badge new" id="media-badge">NEW</span>
+            </a>
+            <a href="#" class="button" id="releases-button">
+                [ releases ]
+                <span class="badge soon" id="releases-badge">SOON</span>
+            </a>
+            <a href="#" class="button" id="forum-button">
+                [ forum ]
+                <span class="badge" id="forum-badge" style="display: none;"></span>
+            </a>
+            <a href="#" class="button" id="discord-button">
+                [ discord ]
+                <span class="badge" id="discord-badge" style="display: none;">1</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Media Gallery Modal -->
+    <div class="media-gallery" id="media-gallery">
+        <span class="gallery-close" id="gallery-close">&times;</span>
+        <h2 class="gallery-title">[ media ]</h2>
+        
+        <div class="video-grid" id="video-grid">
+            <div class="video-item">
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/kuDfNL0rKBo?si=CitgOx4wGWish9nJ" allowfullscreen></iframe>
+                </div>
+                <div class="video-title">[ Nullad 2.0 - Autobhop ]</div>
+            </div>
+
+            <div class="video-item">
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/eQDRpqedrLg?si=jzL-k-Gs5kSdxtbL" allowfullscreen></iframe>
+                </div>
+                <div class="video-title">[ random ass preview ]</div>
+            </div>
+            
+            <div class="video-item">
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/koA1JN9Alzo?si=-vJVie5OVltANvuf" allowfullscreen></iframe>
+                </div>
+                <div class="video-title">[ Nullad v1 - Patched]</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forum Modal -->
+    <div class="forum-container" id="forum-container">
+        <span class="forum-close" id="forum-close">&times;</span>
+        <h2 class="forum-title">[ Community Forum ]</h2>
+        
+        <div class="forum-posts" id="forum-posts">
+            <div class="loading">Loading posts...</div>
+        </div>
+        
+        <a href="https://github.com/Nullbinds/Nullbinds/issues/new" 
+           target="_blank" 
+           class="forum-link">
+           Create New Post
+        </a>
+    </div>
+
+    <script>
+        // Replace these with your GitHub username and repo name
+        const GITHUB_USERNAME = 'Nullbinds';
+        const GITHUB_REPO = 'Nullbinds';
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Video initialization
+            const video = document.getElementById('bg-video');
+            const playPromise = video.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    document.querySelector('.video-fallback').style.display = 'block';
+                    console.log("Video playback prevented:", error);
+                });
+            }
+            
+            video.addEventListener('error', function() {
+                document.querySelector('.video-fallback').style.display = 'block';
+            });
+            
+            // Media Gallery Controls
+            const mediaButton = document.getElementById('media-button');
+            const mediaGallery = document.getElementById('media-gallery');
+            const galleryClose = document.getElementById('gallery-close');
+            
+            mediaButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                mediaGallery.style.display = 'flex';
+                document.getElementById('media-badge').textContent = '';
+                document.getElementById('media-badge').style.display = 'none';
+            });
+            
+            galleryClose.addEventListener('click', function() {
+                mediaGallery.style.display = 'none';
+            });
+            
+            mediaGallery.addEventListener('click', function(e) {
+                if (e.target === mediaGallery) {
+                    mediaGallery.style.display = 'none';
+                }
+            });
+
+            // Forum Controls
+            const forumButton = document.getElementById('forum-button');
+            const forumContainer = document.getElementById('forum-container');
+            const forumClose = document.getElementById('forum-close');
+            
+            forumButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                loadForumPosts();
+            });
+            
+            forumClose.addEventListener('click', function() {
+                forumContainer.style.display = 'none';
+            });
+            
+            forumContainer.addEventListener('click', function(e) {
+                if (e.target === forumContainer) {
+                    forumContainer.style.display = 'none';
+                }
+            });
+
+            // Set up initial badges
+            showNewMediaBadge();
+            showComingSoonReleases();
+        });
+
+        async function loadForumPosts() {
+            const forumContainer = document.getElementById('forum-container');
+            const forumPosts = document.getElementById('forum-posts');
+            
+            forumContainer.style.display = 'flex';
+            forumPosts.innerHTML = '<div class="loading">Loading posts...</div>';
+            
+            try {
+                // First fetch the issues (posts)
+                const issuesResponse = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/issues`);
+                const issues = await issuesResponse.json();
+                
+                if (!issues.length) {
+                    forumPosts.innerHTML = `
+                        <div class="no-posts">No posts yet.</div>
+                        <a href="https://github.com/${GITHUB_USERNAME}/${GITHUB_REPO}/issues/new" 
+                           target="_blank" 
+                           class="forum-link">
+                           Be the first to create one!
+                        </a>
+                    `;
+                    return;
+                }
+                
+                // Fetch comments for each issue
+                const postsWithComments = await Promise.all(issues.map(async issue => {
+                    if (issue.comments > 0) {
+                        const commentsResponse = await fetch(issue.comments_url);
+                        const comments = await commentsResponse.json();
+                        return { ...issue, fetchedComments: comments };
+                    }
+                    return issue;
+                }));
+                
+                renderForumPosts(postsWithComments);
+            } catch (error) {
+                console.error('Error loading forum posts:', error);
+                forumPosts.innerHTML = '<div class="error">Could not load posts. Please try again later.</div>';
+            }
+        }
+        
+        function renderForumPosts(posts) {
+            const forumPosts = document.getElementById('forum-posts');
+            
+            let html = '';
+            posts.forEach(post => {
+                // Skip pull requests
+                if (post.pull_request) return;
+                
+                html += `
+                    <div class="forum-post">
+                        <h3 class="post-title">${escapeHtml(post.title)}</h3>
+                        <div class="post-body">${formatMarkdown(post.body)}</div>
+                        <div class="post-meta">
+                            <span>Posted by ${post.user.login}</span>
+                            <span>${new Date(post.created_at).toLocaleDateString()}</span>
+                            <span>${post.comments} comment${post.comments !== 1 ? 's' : ''}</span>
+                        </div>
+                        
+                        ${post.comments > 0 ? `
+                        <div class="post-comments">
+                            ${post.fetchedComments.map(comment => `
+                                <div class="comment">
+                                    <div class="comment-body">${formatMarkdown(comment.body)}</div>
+                                    <div class="comment-meta">
+                                        <span>By ${comment.user.login}</span>
+                                        <span>${new Date(comment.created_at).toLocaleDateString()}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        ` : ''}
+                        
+                        <a href="${post.html_url}" target="_blank" class="forum-link">View on GitHub</a>
+                    </div>
+                `;
+            });
+            
+            forumPosts.innerHTML = html;
+            
+            // Update forum badge count
+            const postCount = posts.filter(p => !p.pull_request).length;
+            const forumBadge = document.getElementById('forum-badge');
+            forumBadge.textContent = postCount > 0 ? postCount : '';
+            forumBadge.style.display = postCount > 0 ? 'flex' : 'none';
+        }
+        
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Simple markdown to HTML conversion (basic support)
+        function formatMarkdown(text) {
+            if (!text) return '';
+            
+            // Simple replacements
+            return escapeHtml(text)
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>')
+                .replace(/\n/g, '<br>');
+        }
+
+        // Badge control functions
+        function showNewMediaBadge() {
+            const badge = document.getElementById('media-badge');
+            badge.textContent = 'NEW';
+            badge.style.display = 'flex';
+        }
+        
+        function hideMediaBadge() {
+            document.getElementById('media-badge').style.display = 'none';
+        }
+        
+        function showComingSoonReleases() {
+            const badge = document.getElementById('releases-badge');
+            badge.textContent = 'SOON';
+            badge.style.display = 'flex';
+        }
+        
+        function hideReleasesBadge() {
+            document.getElementById('releases-badge').style.display = 'none';
+        }
+        
+        function updateDiscordNotifications(count) {
+            const badge = document.getElementById('discord-badge');
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

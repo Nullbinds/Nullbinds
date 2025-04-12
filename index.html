@@ -94,12 +94,61 @@
             min-width: 100px;
             text-align: center;
             text-decoration: none;
+            position: relative;
         }
         
         .button:hover {
             background-color: rgba(255, 215, 0, 0.1);
             box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
             transform: translateY(-2px);
+        }
+        
+        /* Badge/Notification Styles */
+        .badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #ffd700;
+            color: #000;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+        
+        .badge.new {
+            background-color: #ff4500;
+            color: white;
+            padding: 2px 5px;
+            width: auto;
+            height: auto;
+            border-radius: 10px;
+            font-size: 10px;
+            right: -12px;
+            top: -10px;
+        }
+        
+        .badge.soon {
+            background-color: #4CAF50;
+            color: white;
+            padding: 2px 5px;
+            width: auto;
+            height: auto;
+            border-radius: 10px;
+            font-size: 10px;
+            right: -12px;
+            top: -10px;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
         
         /* Media Gallery Styles */
@@ -193,9 +242,18 @@
     
     <div class="content">
         <div class="buttons-container">
-            <a href="#" class="button" id="media-button">[ media ]</a>
-            <a href="#" class="button">[ releases ]</a>
-            <a href="#" class="button">[ discord ]</a>
+            <a href="#" class="button" id="media-button">
+                [ media ]
+                <span class="badge new" id="media-badge">NEW</span>
+            </a>
+            <a href="#" class="button" id="releases-button">
+                [ releases ]
+                <span class="badge soon" id="releases-badge">SOON</span>
+            </a>
+            <a href="#" class="button" id="discord-button">
+                [ discord ]
+                <span class="badge" id="discord-badge" style="display: none;">1</span>
+            </a>
         </div>
     </div>
     
@@ -231,8 +289,6 @@
                 </div>
                 <div class="video-title">[ Nullad v1 - Patched]</div>
             </div>
-            
-            <!-- Add more YouTube videos as needed -->
         </div>
     </div>
 
@@ -252,6 +308,9 @@
             mediaButton.addEventListener('click', function(e) {
                 e.preventDefault();
                 mediaGallery.style.display = 'flex';
+                // Remove "NEW" badge when media is opened
+                document.getElementById('media-badge').textContent = '';
+                document.getElementById('media-badge').style.display = 'none';
             });
             
             galleryClose.addEventListener('click', function() {
@@ -264,7 +323,44 @@
                     mediaGallery.style.display = 'none';
                 }
             });
+
+            // Example: Set up initial badges
+            // You can remove or modify these based on your needs
+            showNewMediaBadge();
+            showComingSoonReleases();
+            // updateDiscordNotifications(3); // Uncomment to show discord notifications
         });
+
+        // Functions to control badges
+        function showNewMediaBadge() {
+            const badge = document.getElementById('media-badge');
+            badge.textContent = 'NEW';
+            badge.style.display = 'flex';
+        }
+        
+        function hideMediaBadge() {
+            document.getElementById('media-badge').style.display = 'none';
+        }
+        
+        function showComingSoonReleases() {
+            const badge = document.getElementById('releases-badge');
+            badge.textContent = 'SOON';
+            badge.style.display = 'flex';
+        }
+        
+        function hideReleasesBadge() {
+            document.getElementById('releases-badge').style.display = 'none';
+        }
+        
+        function updateDiscordNotifications(count) {
+            const badge = document.getElementById('discord-badge');
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
     </script>
 </body>
 </html>

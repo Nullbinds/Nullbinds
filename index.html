@@ -391,103 +391,6 @@
             z-index: -2;
             display: none;
         }
-        
-        /* Nya stilar för kommentarsfunktionen */
-        .comment-form {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: rgba(30, 30, 30, 0.5);
-            border-radius: 4px;
-        }
-        
-        .comment-form textarea {
-            width: 100%;
-            background-color: rgba(20, 20, 20, 0.7);
-            border: 1px solid #444;
-            color: #fff;
-            padding: 10px;
-            border-radius: 4px;
-            resize: vertical;
-            min-height: 80px;
-            margin-bottom: 10px;
-            font-family: Arial, sans-serif;
-        }
-        
-        .comment-form textarea:focus {
-            border-color: #ffd700;
-            outline: none;
-        }
-        
-        .comment-form button {
-            background-color: rgba(255, 215, 0, 0.2);
-            color: #ffd700;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .comment-form button:hover {
-            background-color: rgba(255, 215, 0, 0.3);
-        }
-        
-        .auth-message {
-            margin-top: 10px;
-            padding: 10px;
-            background-color: rgba(30, 30, 30, 0.7);
-            border-radius: 4px;
-            color: #ddd;
-            text-align: center;
-        }
-        
-        .github-login {
-            display: inline-block;
-            margin-left: 10px;
-            color: #ffd700;
-            text-decoration: none;
-        }
-        
-        .github-login:hover {
-            text-decoration: underline;
-        }
-        
-        .comment-status {
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 4px;
-            text-align: center;
-            display: none;
-        }
-        
-        .comment-status.success {
-            background-color: rgba(50, 205, 50, 0.2);
-            color: #4CAF50;
-        }
-        
-        .comment-status.error {
-            background-color: rgba(255, 69, 0, 0.2);
-            color: #ff4500;
-        }
-        
-        /* Ny stil för att visa befintliga/nya kommentarer */
-        .comment-list {
-            margin-bottom: 20px;
-        }
-        
-        .reload-comments {
-            color: #ffd700;
-            background-color: transparent;
-            border: none;
-            cursor: pointer;
-            text-decoration: underline;
-            margin-top: 15px;
-            font-size: 12px;
-        }
-        
-        .reload-comments:hover {
-            text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
-        }
     </style>
 </head>
 <body>
@@ -576,9 +479,6 @@
         const GITHUB_USERNAME = 'Nullbinds';
         const GITHUB_REPO = 'Nullbinds';
         
-        // Ny variabel för att hantera GitHub-token
-        let githubToken = null;
-        
         document.addEventListener('DOMContentLoaded', function() {
             // Video initialization
             const video = document.getElementById('bg-video');
@@ -617,29 +517,6 @@
                 }
             });
 
-            // Kontrollera om det finns en token i URL:en (från OAuth-återdirigering)
-            const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
-            
-            if (code) {
-                // Ta bort koden från URL:en för renare historik
-                window.history.replaceState({}, document.title, window.location.pathname);
-                
-                // Kontrollera om det finns en lagrad kommentar i sessionStorage
-                const pendingComment = sessionStorage.getItem('pendingComment');
-                if (pendingComment) {
-                    try {
-                        const commentData = JSON.parse(pendingComment);
-                        // Visa ett meddelande till användaren om att kommentera på GitHub
-                        alert('Please complete your comment on GitHub. You will be redirected back here when finished.');
-                        // Rensa den lagrade kommentaren
-                        sessionStorage.removeItem('pendingComment');
-                    } catch (e) {
-                        console.error('Error parsing pending comment:', e);
-                    }
-                }
-            }
-            
             // Forum Controls
             const forumButton = document.getElementById('forum-button');
             const forumContainer = document.getElementById('forum-container');
@@ -648,7 +525,6 @@
             forumButton.addEventListener('click', function(e) {
                 e.preventDefault();
                 loadForumPosts();
-                forumContainer.style.display = 'flex';
             });
             
             forumClose.addEventListener('click', function() {
@@ -664,39 +540,13 @@
             // Set up initial badges
             showNewMediaBadge();
             showComingSoonReleases();
-            
-            // Lyssna efter kommentarsformulär-insändningar som läggs till dynamiskt
-            document.addEventListener('submit', function(e) {
-                if (e.target.classList.contains('comment-form')) {
-                    e.preventDefault();
-                    
-                    const form = e.target;
-                    const issueNumber = form.dataset.issue;
-                    const commentText = form.querySelector('textarea').value.trim();
-                    const statusElement = form.querySelector('.comment-status');
-                    
-                    if (!commentText) {
-                        showCommentStatus(statusElement, "Please enter a comment", false);
-                        return;
-                    }
-                    
-                    submitComment(issueNumber, commentText, form);
-                }
-            });
-            
-            // Lyssna efter klick på "Reload Comments"-knappar som läggs till dynamiskt
-            document.addEventListener('click', function(e) {
-                if (e.target.classList.contains('reload-comments')) {
-                    e.preventDefault();
-                    const issueNumber = e.target.dataset.issue;
-                    reloadComments(issueNumber);
-                }
-            });
         });
 
         async function loadForumPosts() {
+            const forumContainer = document.getElementById('forum-container');
             const forumPosts = document.getElementById('forum-posts');
             
+            forumContainer.style.display = 'flex';
             forumPosts.innerHTML = '<div class="loading">Loading posts...</div>';
             
             try {
@@ -723,54 +573,13 @@
                         const comments = await commentsResponse.json();
                         return { ...issue, fetchedComments: comments };
                     }
-                    return { ...issue, fetchedComments: [] };
+                    return issue;
                 }));
                 
                 renderForumPosts(postsWithComments);
             } catch (error) {
                 console.error('Error loading forum posts:', error);
                 forumPosts.innerHTML = '<div class="error">Could not load posts. Please try again later.</div>';
-            }
-        }
-        
-        async function reloadComments(issueNumber) {
-            const commentsContainer = document.getElementById(`comments-${issueNumber}`);
-            if (!commentsContainer) return;
-            
-            commentsContainer.innerHTML = '<div class="loading">Loading comments...</div>';
-            
-            try {
-                const commentsResponse = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/issues/${issueNumber}/comments`);
-                const comments = await commentsResponse.json();
-                
-                if (comments.length === 0) {
-                    commentsContainer.innerHTML = '<div class="no-comments">No comments yet.</div>';
-                    return;
-                }
-                
-                let commentsHtml = '';
-                comments.forEach(comment => {
-                    commentsHtml += `
-                        <div class="comment">
-                            <div class="comment-body">${formatMarkdown(comment.body || '')}</div>
-                            <div class="comment-meta">
-                                <span>By ${comment.user.login}</span>
-                                <span>${new Date(comment.created_at).toLocaleDateString()}</span>
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                commentsContainer.innerHTML = commentsHtml;
-                
-                // Uppdatera antalet kommentarer i metadatan
-                const commentCountElement = document.querySelector(`.post-meta span[data-issue="${issueNumber}"]`);
-                if (commentCountElement) {
-                    commentCountElement.textContent = `${comments.length} comment${comments.length !== 1 ? 's' : ''}`;
-                }
-            } catch (error) {
-                console.error('Error reloading comments:', error);
-                commentsContainer.innerHTML = '<div class="error">Failed to load comments.</div>';
             }
         }
         
@@ -785,41 +594,26 @@
                 html += `
                     <div class="forum-post">
                         <h3 class="post-title">${escapeHtml(post.title)}</h3>
-                        <div class="post-body">${formatMarkdown(post.body || '')}</div>
+                        <div class="post-body">${formatMarkdown(post.body)}</div>
                         <div class="post-meta">
                             <span>Posted by ${post.user.login}</span>
                             <span>${new Date(post.created_at).toLocaleDateString()}</span>
-                            <span data-issue="${post.number}">${post.comments} comment${post.comments !== 1 ? 's' : ''}</span>
+                            <span>${post.comments} comment${post.comments !== 1 ? 's' : ''}</span>
                         </div>
                         
-                        <div class="comment-list" id="comments-${post.number}">
-                            ${post.fetchedComments && post.fetchedComments.length > 0 ? post.fetchedComments.map(comment => `
+                        ${post.comments > 0 ? `
+                        <div class="post-comments">
+                            ${post.fetchedComments.map(comment => `
                                 <div class="comment">
-                                    <div class="comment-body">${formatMarkdown(comment.body || '')}</div>
+                                    <div class="comment-body">${formatMarkdown(comment.body)}</div>
                                     <div class="comment-meta">
                                         <span>By ${comment.user.login}</span>
                                         <span>${new Date(comment.created_at).toLocaleDateString()}</span>
                                     </div>
                                 </div>
-                            `).join('') : '<div class="no-comments">No comments yet.</div>'}
-                            
-                            <button class="reload-comments" data-issue="${post.number}">Reload comments</button>
+                            `).join('')}
                         </div>
-                        
-                        <!-- Nytt kommentarsformulär för varje inlägg -->
-                        <div class="comment-form-container">
-                            <form class="comment-form" data-issue="${post.number}">
-                                <textarea placeholder="Add your comment here..."></textarea>
-                                <button type="submit">Post Comment</button>
-                                <div class="comment-status"></div>
-                            </form>
-                            <div class="auth-message">
-                                To post comments, you'll be redirected to GitHub for authentication.
-                                <a href="https://github.com/login/oauth/authorize?client_id=Ov23li3ExEO5EpWcOG4C&scope=public_repo" class="github-login">
-                                    Login with GitHub
-                                </a>
-                            </div>
-                        </div>
+                        ` : ''}
                         
                         <a href="${post.html_url}" target="_blank" class="forum-link">View on GitHub</a>
                     </div>
@@ -835,41 +629,8 @@
             forumBadge.style.display = postCount > 0 ? 'flex' : 'none';
         }
         
-        async function submitComment(issueNumber, commentText, form) {
-            const statusElement = form.querySelector('.comment-status');
-            
-            // GitHub-autentisering krävs för att posta kommentarer
-            // För GitHub Pages behöver vi omdirigera användaren till GitHub för autentisering
-            
-            // Spara formulärdata i sessionStorage för att återställa efter autentisering
-            sessionStorage.setItem('pendingComment', JSON.stringify({
-                issueNumber: issueNumber,
-                commentText: commentText
-            }));
-            
-            showCommentStatus(statusElement, "Redirecting to GitHub for comment...", true);
-            
-            // Eftersom GitHub Pages är statisk, omdirigera till GitHub Issue för att kommentera där
-            setTimeout(() => {
-                window.location.href = `https://github.com/${GITHUB_USERNAME}/${GITHUB_REPO}/issues/${issueNumber}#issuecomment-new`;
-            }, 1500);
-        }
-        
-        function showCommentStatus(element, message, isSuccess) {
-            element.textContent = message;
-            element.className = 'comment-status ' + (isSuccess ? 'success' : 'error');
-            element.style.display = 'block';
-            
-            if (!isSuccess) {
-                setTimeout(() => {
-                    element.style.display = 'none';
-                }, 5000);
-            }
-        }
-        
         // Helper function to escape HTML
         function escapeHtml(text) {
-            if (!text) return '';
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
@@ -879,41 +640,44 @@
         function formatMarkdown(text) {
             if (!text) return '';
             
-             // Simple replacements
-    return escapeHtml(text)
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>')
-        .replace(/\n/g, '<br>');
-}
+            // Simple replacements
+            return escapeHtml(text)
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>')
+                .replace(/\n/g, '<br>');
+        }
 
-// Badge control functions
-function showNewMediaBadge() {
-    const badge = document.getElementById('media-badge');
-    badge.textContent = 'NEW';
-    badge.style.display = 'flex';
-}
-
-function hideMediaBadge() {
-    document.getElementById('media-badge').style.display = 'none';
-}
-
-function showComingSoonReleases() {
-    const badge = document.getElementById('releases-badge');
-    badge.textContent = 'SOON';
-    badge.style.display = 'flex';
-}
-
-function hideReleasesBadge() {
-    document.getElementById('releases-badge').style.display = 'none';
-}
-
-function updateDiscordNotifications(count) {
-    const badge = document.getElementById('discord-badge');
-    if (count > 0) {
-        badge.textContent = count;
-        badge.style.display = 'flex';
-    } else {
-        badge.style.display = 'none';
-    }
-}
+        // Badge control functions
+        function showNewMediaBadge() {
+            const badge = document.getElementById('media-badge');
+            badge.textContent = 'NEW';
+            badge.style.display = 'flex';
+        }
+        
+        function hideMediaBadge() {
+            document.getElementById('media-badge').style.display = 'none';
+        }
+        
+        function showComingSoonReleases() {
+            const badge = document.getElementById('releases-badge');
+            badge.textContent = 'SOON';
+            badge.style.display = 'flex';
+        }
+        
+        function hideReleasesBadge() {
+            document.getElementById('releases-badge').style.display = 'none';
+        }
+        
+        function updateDiscordNotifications(count) {
+            const badge = document.getElementById('discord-badge');
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

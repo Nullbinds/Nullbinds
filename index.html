@@ -628,35 +628,37 @@ function generateRandomString(length) {
   return result;
 }
 
-// ==================== NYA FUNKTIONER ====================
 async function handleGitHubAuth() {
-
-  const GITHUB_REDIRECT_URI = 'https://nullbinds.github.io/Nullbinds/';
-  
-  // 1. Kolla om vi redan har en token
+  // 1. Check for existing token
   const token = localStorage.getItem('github_token');
   if (token) return token;
 
-  // 2. Kolla URL efter OAuth-svar
+  // 2. Check for auth code in URL
   const params = new URLSearchParams(window.location.search);
   const code = params.get('code');
   
   if (code) {
     try {
-      // 3. Byta kod mot token (kräver backend)
       const token = await exchangeCodeForToken(code);
       localStorage.setItem('github_token', token);
       window.history.replaceState({}, document.title, window.location.pathname);
       return token;
     } catch (error) {
-      console.error('Inloggning misslyckades:', error);
+      console.error('Login failed:', error);
     }
   }
 
-  // 4. Starta OAuth-flöde
-  const authUrl = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${encodeURIComponent(GITHUB_REDIRECT_URI)}&scope=repo`;
-  window.location.href = authUrl;
-  return null;
+  // 3. Get auth URL config from server
+  try {
+    const response = await fetch('/.netlify/functions/get-auth-config');
+    const { client_id, redirect_uri } = await response.json();
+    
+    // Start OAuth flow
+    const authUrl = `https://github.com/login/oauth/authorize?client_id=${client_id}&redirect_uri=${encodeURIComponent(redirect_uri)}&scope=repo`;
+    window.location.href = authUrl;
+  } catch (error) {
+    console.error('Failed to get auth config:', error);
+  }
 }
 
 function logout() {

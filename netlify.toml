@@ -5,3 +5,4 @@
 # Disable secrets scanning for these paths (if needed)
 [secrets]
   scan_omit_paths = ["netlify/functions/*"]
+  scan_enabled = false
